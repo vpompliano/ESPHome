@@ -1,1 +1,1 @@
-Repository for ESPHome config files for different switches and plus that I use.
+Repository for ESPHome config files for different switches and plugs that I use.
