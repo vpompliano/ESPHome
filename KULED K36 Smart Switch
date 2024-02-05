@@ -1,0 +1,89 @@
+substitutions:
+#https://esphome.io/guides/configuration-types.html#substitutions
+  device_name: kuled-k36 # hostname & entity_id
+  friendly_name: kuled-k36-switch # Displayed in HA frontend
+  ip_address: !secret kuled-k36-ip # use /config/esphome/secrets.yaml
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+  
+mdns:
+  disabled: false
+  
+wifi:
+  ssid: !secret wifissid
+  password: !secret wifipass
+  manual_ip:
+    static_ip: ${ip_address}
+    gateway: !secret wifigateway
+    subnet: !secret wifisubnet
+    dns1: !secret wifidns1
+    dns2: !secret wifidns2
+  domain: !secret domain
+  
+# Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "esphome_ssid"
+    password: !secret wifipass
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+  reboot_timeout: 0s
+
+ota:
+  password: !secret esphome_ota_password
+
+# used just for testing, otherwise no need for it
+web_server:
+  port: 80
+
+time:
+  - platform: homeassistant
+
+status_led:
+  pin:
+    number: GPIO13
+    inverted: true
+
+output:
+  - platform: esp8266_pwm
+    id: state_led
+    pin:
+      number: GPIO10
+      inverted: true
+
+light:
+  - platform: monochromatic
+    output: state_led
+    id: led
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO00
+    id: button1
+    on_press:
+      then:
+        - switch.toggle: relay1
+
+# Added a PIR sensor to GPIO3 by soldering to 3.3v, ground, GPIO3 and running wires out to attach to the PIR
+  - platform: gpio
+    pin: GPIO3
+    name: "${friendly_name} PIR Sensor"
+    device_class: motion
+
+switch:
+  - platform: gpio
+    pin: GPIO12
+    id: relay1
+    name: ${friendly_name} switch
+    icon: "mdi:light-switch"
