@@ -1,22 +1,35 @@
 substitutions:
-  device_name: <<Device Name>>
-  device_description: <<Device Description>>
-  friendly_name: <<Device friendly Name>>
+# https://esphome.io/guides/configuration-types.html#substitutions
+# Change the following to our steeings
+  device_name: treatlife_ss01s # hostname & entity_id
+  friendly_name: treatlife_ss01s_light # Displayed in HA frontend
+  ip_address: !secret treatlife-ss01s-ip # use /config/esphome/secrets.yaml
+  icon: "mdi:light-switch"
 
 esphome:
   name: ${device_name}
-  comment: ${device_description}
   platform: ESP8266
   board: esp01_1m
-
+  
+mdns:
+  disabled: false
+  
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  domain: !secret wifi_domain
-  fast_connect: on #we only have one WiFi AP so just use the first one that matches
-  ap: #since we listed an SSID above, this AP mode will only enable if no WiFi connection could be made
-    ssid: !secret ap_ssid
-    password: !secret ap_password
+  ssid: !secret wifissid
+  password: !secret wifipass
+  manual_ip:
+    static_ip: ${ip_address}
+    gateway: !secret wifigateway
+    subnet: !secret wifisubnet
+    dns1: !secret wifidns1
+    dns2: !secret wifidns2
+  domain: !secret domain
+  
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "esphome_ssid"
+    password: !secret wifipass
 
 captive_portal:
 
@@ -25,13 +38,19 @@ logger:
 
 # Enable Home Assistant API
 api:
+  encryption:
+    key: !secret encryption_key
+  reboot_timeout: 0s
 
-# Enable OTA updates
 ota:
+  password: !secret esphome_ota_password
 
-# Enable web server
+# used just for testing, otherwise no need for it
 web_server:
   port: 80
+
+time:
+  - platform: homeassistant
 
 binary_sensor:
 # Toggle button
