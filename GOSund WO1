@@ -6,6 +6,24 @@ substitutions:
   friendly_name: gosund-wo1-outlet # Displayed in HA frontend
   ip_address: !secret gosund-wo1-ip # use /config/esphome/secrets.yaml
 
+
+# Some things may need to be adjusted for hardware or preference differences.
+# Adjust them here:
+  # Note: Voltage divider on the BL0937 may vary from device to device.
+  # If your voltage appears off, adjust that number as necessary.
+  # The default voltage divider is about 25% too high.
+  # In testing 4 separate devices, the range was 1646-1692, with a range
+  # average of 1670.
+  voltage_div: "1670"
+  # Update interval (Time) for power sensors.  Because of a hardware limitation
+  # (BL0937 swaps between current and voltage, and throws out the first value
+  # after the swap), voltage and current will update at quadruple the interval.
+  # In order to have everything update at least every 60 seconds, an update
+  # interval of 15s is needed.
+  # Power and energy will update each update_interval.
+  update_interval: "15s"
+
+
 esphome:
   name: ${device_name}
   platform: ESP8266
@@ -48,23 +66,6 @@ ota:
   # https://esphome.io/components/ota
 
 # Device Specific Config
-
-# Some things may need to be adjusted for hardware or preference differences.
-# Adjust them here:
-substitutions:
-  # Note: Voltage divider on the BL0937 may vary from device to device.
-  # If your voltage appears off, adjust that number as necessary.
-  # The default voltage divider is about 25% too high.
-  # In testing 4 separate devices, the range was 1646-1692, with a range
-  # average of 1670.
-  voltage_div: "1670"
-  # Update interval (Time) for power sensors.  Because of a hardware limitation
-  # (BL0937 swaps between current and voltage, and throws out the first value
-  # after the swap), voltage and current will update at quadruple the interval.
-  # In order to have everything update at least every 60 seconds, an update
-  # interval of 15s is needed.
-  # Power and energy will update each update_interval.
-  update_interval: "15s"
 
 status_led:
   pin:
