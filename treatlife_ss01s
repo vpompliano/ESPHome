@@ -1,0 +1,91 @@
+substitutions:
+  #   # https://esphome.io/guides/configuration-types.html#substitutions
+  device_name: treatlife_ss01s # hostname & entity_id
+  friendly_name: treatlife_ss01s_switch # Displayed in HA frontend
+  ip_address: !secret test_ip2 # use /config/esphome/secrets.yaml
+  icon: "mdi:light-switch"
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+  
+mdns:
+  disabled: false
+  
+wifi:
+  ssid: !secret wifissid
+  password: !secret wifipass
+  manual_ip:
+    static_ip: ${ip_address}
+    gateway: !secret wifigateway
+    subnet: !secret wifisubnet
+    dns1: !secret wifidns1
+    dns2: !secret wifidns2
+  domain: !secret domain
+  
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "esphome_ssid"
+    password: !secret wifipass
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+  reboot_timeout: 0s
+
+ota:
+  password: !secret esphome_ota_password
+
+# used just for testing, otherwise no need for it
+web_server:
+  port: 80
+
+time:
+  - platform: homeassistant
+
+output:
+  - platform: gpio
+    pin: GPIO12
+    id: switch_output
+
+  - platform: gpio
+    pin:
+      number: GPIO4
+    id: white_led_output
+
+light:
+  - platform: binary
+    name: ${friendly_name}
+    id: ${device_name}
+    output: switch_output
+    on_turn_on:
+      - light.turn_on: white_led
+    on_turn_off:
+      - light.turn_off: white_led
+
+  - platform: binary
+    id: white_led
+    output: white_led_output
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO13
+    id: ${device_name}_button
+    name: ${friendly_name} Button
+    on_press:
+      - light.toggle: ${device_name}
+
+status_led:
+  # Red LED
+  pin:
+    number: GPIO5
+    inverted: yes
